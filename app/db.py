@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS audit_log (
 CREATE TABLE IF NOT EXISTS admins (
     username TEXT PRIMARY KEY,
     password_hash TEXT NOT NULL,
-    email TEXT NOT NULL
+    email TEXT NOT NULL,
+    totp_secret TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS login_codes (
     username TEXT PRIMARY KEY,
@@ -95,9 +96,14 @@ def create_merchant(conn: sqlite3.Connection, name: str, email: str) -> tuple[st
     return merchant_id, token
 
 
-def create_admin(conn: sqlite3.Connection, username: str, password: str, email: str) -> None:
-    conn.execute("INSERT INTO admins (username, password_hash, email) VALUES (?, ?, ?)",
-                 (username, hash_password(password), email))
+def create_admin(conn: sqlite3.Connection, username: str, password: str, email: str,
+                 totp_secret: str | None = None) -> str:
+    """Creates an admin enrolled in an authenticator app. Returns the TOTP secret."""
+    import pyotp
+    secret = totp_secret or pyotp.random_base32()
+    conn.execute("INSERT INTO admins (username, password_hash, email, totp_secret) VALUES (?, ?, ?, ?)",
+                 (username, hash_password(password), email, secret))
+    return secret
 
 
 def audit(conn: sqlite3.Connection, actor: str, action: str, resource: str) -> None:

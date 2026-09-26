@@ -1,27 +1,23 @@
-import pytest
+"""STD-AC-02.a Admin login needs TOTP or a security key. Email or SMS codes never complete admin login."""
+from testkit import totp_code
 
-from testkit import extract_code
 
-
-@pytest.mark.parametrize("email_index", [0])
-@pytest.mark.xfail(strict=True, reason="https://github.com/oplatechie/payments-demo/issues/1 STD-AC-02.a")
-def test_email_code_cannot_complete_admin_login(client, admin_user, captured_emails, db, email_index):
-    """Email-delivered codes are offered by this app but must not create admin sessions."""
+def test_admin_login_requires_totp_and_sends_no_email_code(client, admin_user, captured_emails, db):
     start = client.post(
         "/admin/login",
         json={"username": admin_user["username"], "password": admin_user["password"]},
     )
-
     assert start.status_code == 200
-    assert start.json().get("second_factor") == "email_code"
-    assert captured_emails, "admin login should send an email code when that factor is offered"
+    assert start.json().get("second_factor") in {"totp", "webauthn"}
+    assert captured_emails == [], "no login code may be sent by email"
 
-    email_code = extract_code(captured_emails[email_index])
-    verify = client.post(
-        "/admin/login/verify",
-        json={"username": admin_user["username"], "code": email_code},
-    )
-
-    assert verify.status_code in {401, 403}
-    assert "session" not in verify.json()
+    guessed = client.post("/admin/login/verify", json={"username": admin_user["username"], "code": "123456"})
+    assert guessed.status_code in {401, 403}
     assert db.rows("SELECT username FROM admin_sessions") == []
+
+    ok = client.post(
+        "/admin/login/verify",
+        json={"username": admin_user["username"], "code": totp_code(admin_user["totp_secret"])},
+    )
+    assert ok.status_code == 200
+    assert db.rows("SELECT username FROM admin_sessions") == [{"username": admin_user["username"]}]

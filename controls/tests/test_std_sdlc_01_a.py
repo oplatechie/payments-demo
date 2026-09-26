@@ -2,7 +2,7 @@
 
 import pytest
 
-from testkit import extract_code
+from testkit import totp_code
 
 
 @pytest.mark.parametrize(
@@ -67,7 +67,6 @@ def test_admin_verify_rejects_malformed_input_and_stores_no_session(
         json={"username": admin_user["username"], "password": admin_user["password"]},
     )
     assert login.status_code == 200
-    existing_code = extract_code(captured_emails[-1])
     before_codes = db.rows("SELECT * FROM login_codes")
     before_sessions = len(db.rows("SELECT * FROM admin_sessions"))
 
@@ -77,9 +76,9 @@ def test_admin_verify_rejects_malformed_input_and_stores_no_session(
     assert len(db.rows("SELECT * FROM admin_sessions")) == before_sessions
     assert db.rows("SELECT * FROM login_codes") == before_codes
 
-    # The rejected verification did not consume or replace the existing code.
+    # The rejected request did not lock out a valid TOTP login.
     valid_verify = client.post(
         "/admin/login/verify",
-        json={"username": admin_user["username"], "code": existing_code},
+        json={"username": admin_user["username"], "code": totp_code(admin_user["totp_secret"])},
     )
     assert valid_verify.status_code == 200

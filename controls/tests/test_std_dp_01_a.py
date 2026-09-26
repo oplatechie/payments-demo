@@ -1,7 +1,7 @@
 import pytest
 """STD-DP-01.a: read APIs return only needed personal data fields."""
 
-from testkit import extract_code
+from testkit import totp_code
 
 
 TEST_CARD = "4111111111111111"
@@ -16,7 +16,7 @@ def _admin_session(client, admin_user, captured_emails):
         json={"username": admin_user["username"], "password": admin_user["password"]},
     )
     assert response.status_code == 200
-    code = extract_code(captured_emails[-1])
+    code = totp_code(admin_user["totp_secret"])
     response = client.post(
         "/admin/login/verify",
         json={"username": admin_user["username"], "code": code},

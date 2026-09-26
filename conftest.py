@@ -48,12 +48,23 @@ def merchant_token(merchants):
 
 @pytest.fixture
 def admin_user(conn):
-    """An admin account. Returns {"username", "password", "email"}."""
+    """An admin enrolled in an authenticator app. Returns {"username", "password", "email", "totp_secret"}."""
     from app.db import create_admin
     user = {"username": "admin", "password": secrets.token_urlsafe(12), "email": "admin@example.com"}
-    create_admin(conn, user["username"], user["password"], user["email"])
+    user["totp_secret"] = create_admin(conn, user["username"], user["password"], user["email"])
     conn.commit()
     return user
+
+
+@pytest.fixture
+def admin_session(client, admin_user):
+    """A valid admin session token (password + TOTP)."""
+    from testkit import totp_code
+    client.post("/admin/login", json={"username": admin_user["username"], "password": admin_user["password"]})
+    r = client.post("/admin/login/verify",
+                    json={"username": admin_user["username"], "code": totp_code(admin_user["totp_secret"])})
+    assert r.status_code == 200, r.text
+    return r.json()["session"]
 
 
 @pytest.fixture
