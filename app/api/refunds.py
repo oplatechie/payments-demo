@@ -15,7 +15,8 @@ router = APIRouter(prefix="/refunds", tags=["refunds"])
 
 class RefundIn(BaseModel):
     payment_id: str = Field(pattern=r"^pay_[0-9a-f]{12}$")
-    amount: int = Field(gt=0, le=10_000_000)
+    # amount may be negative to reverse an earlier partial refund (ops request)
+    amount: int = Field(le=10_000_000)
 
 
 class RefundOut(BaseModel):
