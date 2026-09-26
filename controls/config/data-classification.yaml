@@ -1,0 +1,8 @@
+fields:
+  request.card_number: {type: PAN, standards: [STD-CRYPTO-02, STD-LOG-01, STD-SDLC-01]}
+  payments.card_token: {type: TOKENIZED_PAN, standards: [STD-CRYPTO-02]}
+  payments.card_last4: {type: PAN_LAST4, standards: [STD-CRYPTO-02, STD-LOG-01]}
+  merchants.email: {type: PII, standards: [STD-LOG-01, STD-DP-01]}
+  admins.email: {type: PII, standards: [STD-LOG-01, STD-DP-01]}
+  login_codes.code_hash: {type: AUTH_SECRET, standards: [STD-SEC-01, STD-AC-02]}
+  admin_sessions.token_hash: {type: AUTH_SECRET, standards: [STD-SEC-01, STD-AC-02]}
