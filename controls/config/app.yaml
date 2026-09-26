@@ -1,0 +1,4 @@
+app: payments-demo
+tier: 1
+always_apply: [STD-SEC-01, STD-SDLC-02]
+not_applicable: {}
