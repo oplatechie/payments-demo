@@ -1,0 +1,32 @@
+STD-AC-01:
+  - app/api/payments.py
+  - app/auth.py
+  - app/db.py
+STD-AC-02:
+  - app/api/admin_auth.py
+  - app/api/admin.py
+  - app/auth.py
+  - app/db.py
+STD-CRYPTO-01:
+  - app/**/*.py
+STD-CRYPTO-02:
+  - app/api/payments.py
+  - app/vault.py
+  - app/db.py
+STD-DP-01:
+  - app/api/admin.py
+  - app/api/payments.py
+  - app/db.py
+STD-LOG-01:
+  - app/api/payments.py
+  - app/api/admin.py
+  - app/db.py
+STD-LOG-02:
+  - app/main.py
+  - app/**/*.py
+STD-SDLC-01:
+  - app/api/*.py
+STD-SDLC-02:
+  - requirements.txt
+STD-SEC-01:
+  - "**/*"
