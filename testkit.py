@@ -21,6 +21,12 @@ def find_pans(text: str) -> list[str]:
     return [m for m in re.findall(r"\d{13,19}", text or "") if is_luhn_pan(m)]
 
 
+def totp_code(secret: str) -> str:
+    """Current code from an authenticator app enrolled with this secret."""
+    import pyotp
+    return pyotp.TOTP(secret).now()
+
+
 def extract_code(email: dict) -> str:
     """The 6-digit code from a login email."""
     match = re.search(r"\b(\d{6})\b", email["body"])
